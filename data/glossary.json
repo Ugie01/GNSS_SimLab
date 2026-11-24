@@ -1,0 +1,522 @@
+[
+  {
+    "id": "wgs84",
+    "term_ko": "세계측지계 1984",
+    "term_en": "WGS-84 (World Geodetic System 1984)",
+    "category": "좌표계 & 시간",
+    "summary": "GPS가 사용하는 지구 타원체 표준 기준 좌표계 및 중력 모델",
+    "description": "지구는 완전한 구가 아니라 적도 반지름이 극 반지름보다 약 21.4km 더 긴 회전 타원체(Oblate Spheroid)입니다. WGS-84는 장반경(a = 6,378,137.0 m)과 편평률(f = 1/298.257223563)을 정의하여 전 세계 어디서나 동일한 기준으로 위치를 표현하도록 만든 GPS 표준 측지계입니다.",
+    "formula_or_example": "a = 6,378,137.0 m, f = 1 / 298.257223563, e² = 2f - f² ≈ 0.00669437999",
+    "related_modules": ["m01_coords_time", "m03_pvt_dop"]
+  },
+  {
+    "id": "llh",
+    "term_ko": "경위도·타원체고 좌표계",
+    "term_en": "LLH / Geodetic Coordinates (Latitude, Longitude, Height)",
+    "category": "좌표계 & 시간",
+    "summary": "위도(φ), 경도(λ), 타원체 고도(h)로 지구상 위치를 나타내는 측지 좌표계",
+    "description": "사람이 지도에서 위치를 읽을 때 가장 직관적인 좌표계입니다. 여기서 고도(h)는 해발고도(지오이드 고도)가 아니라 WGS-84 기준 타원체 표면으로부터 법선 방향으로 측정한 '타원체고(Ellipsoidal Height)'임에 주의해야 합니다.",
+    "formula_or_example": "서울 시청 예시: φ = 37.5665° N, λ = 126.9780° E, h = 65.0 m",
+    "related_modules": ["m01_coords_time"]
+  },
+  {
+    "id": "ecef",
+    "term_ko": "지구중심 지구고정 좌표계",
+    "term_en": "ECEF (Earth-Centered, Earth-Fixed)",
+    "category": "좌표계 & 시간",
+    "summary": "지구 질량 중심을 원점(0,0,0)으로 하고 지구 자전과 함께 회전하는 3차원 직교 좌표계(X, Y, Z)",
+    "description": "위성 궤도 계산과 의사거리 측위 방정식을 풀 때 가장 핵심이 되는 좌표계입니다. X축은 본초자오선(경도 0°)과 적도의 교차점, Z축은 북극 방향, Y축은 오른손 법칙에 의해 동경 90° 적도 방향을 가리킵니다. 지표면 근처에서 좌표 크기가 약 6.37×10⁶ m에 달하므로 반드시 float64(double)로 저장해야 합니다.",
+    "formula_or_example": "R_earth ≈ 6,378,137 m → 서울 근처 ECEF ≈ (-3041235 m, 4053941 m, 3867123 m)",
+    "related_modules": ["m01_coords_time", "m03_pvt_dop"]
+  },
+  {
+    "id": "enu",
+    "term_ko": "지역 수평 직교 좌표계 (동-북-천정)",
+    "term_en": "ENU (East-North-Up Local Tangent Plane)",
+    "category": "좌표계 & 시간",
+    "summary": "관측자의 현재 위치를 원점으로 동쪽(E), 북쪽(N), 하늘(U) 방향을 축으로 삼는 국소 좌표계",
+    "description": "ECEF 좌표는 수백만 미터 단위라 직관적인 이동 방향이나 위성의 앙각(Elevation)·방위각(Azimuth)을 알기 어렵습니다. 기준점(Reference Point)에 접하는 평면을 세워 동쪽(East), 북쪽(North), 위쪽(Up)으로 변환하면 자율주행차나 드론의 국소 이동 궤적과 안테나 입사각을 직관적으로 다룰 수 있습니다.",
+    "formula_or_example": "[E, N, U]^T = R_ecef2enu(φ_ref, λ_ref) · ([X, Y, Z]^T - [X_ref, Y_ref, Z_ref]^T)",
+    "related_modules": ["m01_coords_time", "m03_pvt_dop", "m04_antijam_crpa", "m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "ned",
+    "term_ko": "북-동-하강 항법 좌표계",
+    "term_en": "NED (North-East-Down)",
+    "category": "좌표계 & 시간",
+    "summary": "항공기·미사일·관성항법(INS)에서 표준으로 사용하는 북(N)-동(E)-아래(D) 오른손 좌표계",
+    "description": "ENU 좌표계와 달리 Z축이 중력 방향(Down)을 향합니다. 항공기나 드론에서 기수 우회전(Yaw > 0)이 오른손 법칙에 의해 자연스럽게 양(+)의 회전이 되므로, 비행제어(FCS) 및 GNSS/INS 통합 칼만필터에서 표준 항법 좌표계(n-frame)로 널리 쓰입니다.",
+    "formula_or_example": "N = ENU_N, E = ENU_E, D = -ENU_U",
+    "related_modules": ["m01_coords_time", "m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "prime_vertical_radius",
+    "term_ko": "묘유선 곡률반경",
+    "term_en": "Prime Vertical Radius of Curvature (N)",
+    "category": "좌표계 & 시간",
+    "summary": "타원체 표면의 한 점에서 자오선과 수직인 단면(동서 방향)의 곡률반경",
+    "description": "지구가 타원체이기 때문에 위도(φ)에 따라 지구 표면에서 회전축까지 법선을 연장한 길이가 달라집니다. LLH를 ECEF로 변환할 때 사용하는 반경 N(φ)이 바로 묘유선 곡률반경이며, 적도에서 최소(a)이고 극지방에서 최대가 됩니다.",
+    "formula_or_example": "N(φ) = a / sqrt(1 - e² sin²(φ))",
+    "related_modules": ["m01_coords_time"]
+  },
+  {
+    "id": "gpst",
+    "term_ko": "GPS 시스템 시간",
+    "term_en": "GPST (GPS Time) / Week & TOW",
+    "category": "좌표계 & 시간",
+    "summary": "1980년 1월 6일 00:00:00 UTC를 기점으로 윤초(Leap Second) 없이 연속 증가하는 원자시계 시간",
+    "description": "지구 자전 속도 변화에 맞춰 1초를 끼워 넣는 UTC와 달리, 위성항법 계산 도중 시간이 불연속적으로 튀면 수백 미터의 측위 사고가 발생합니다. 따라서 GPST는 윤초를 반영하지 않고 연속으로 흐르며, 주 번호(GPS Week)와 주내 경과초(TOW, Time of Week: 0 ~ 604,800초)로 표현합니다.",
+    "formula_or_example": "GPST = UTC + Δt_LS (현재 윤초 Δt_LS = 18초), 1주 = 604,800초",
+    "related_modules": ["m01_coords_time"]
+  },
+  {
+    "id": "leap_second",
+    "term_ko": "윤초",
+    "term_en": "Leap Second",
+    "category": "좌표계 & 시간",
+    "summary": "원자시계(TAI/GPST)와 지구 자전 기반 세계시(UTC)의 차이를 보정하기 위해 추가하는 1초",
+    "description": "1980년 1월 6일에는 GPST와 UTC가 일치했으나, 이후 지구 자전이 미세하게 느려지면서 총 18번의 윤초가 삽입되었습니다. GNSS 수신기는 항법 메시지(Navigation Message)의 UTC 파라미터를 수신하기 전까지 펌웨어 기본 윤초값을 사용하므로, 콜드 스타트 직후 최대 12.5분간 UTC 시간이 1~2초 어긋날 수 있습니다.",
+    "formula_or_example": "2017년 1월 1일 이후 GPST - UTC = +18초",
+    "related_modules": ["m01_coords_time"]
+  },
+  {
+    "id": "pps",
+    "term_ko": "초당 1펄스 정밀 동기 신호",
+    "term_en": "1PPS (One Pulse Per Second)",
+    "category": "좌표계 & 시간",
+    "summary": "GNSS 수신기가 매 정초(UTC 또는 GPST 0.000000초)마다 하드웨어 핀으로 출력하는 수십 ns 정밀도의 전기 펄스",
+    "description": "UART/SPI로 전달되는 NMEA나 바이너리 패킷은 직렬 통신 전송 지연 때문에 수 ms ~ 수백 ms 늦게 도착합니다. 정밀 시각 동기가 필요한 IMU 센서 융합이나 기지국에서는 1PPS 상승 에지(Rising Edge)에 MCU 타이머 캡처 인터럽트를 걸어 정확한 시각(Time of Validity)을 확정하고, 직후 도착하는 UART 패킷으로 '그 펄스가 몇 시 몇 분 몇 초였는지' 라벨링합니다.",
+    "formula_or_example": "1PPS 에지 정밀도: 일반적으로 < 20 ~ 50 ns (RMS)",
+    "related_modules": ["m01_coords_time", "m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "float32_quantization",
+    "term_ko": "단정도 부동소수점 좌표 양자화 오차",
+    "term_en": "IEEE 754 float32 Coordinate Quantization Error",
+    "category": "임베디드 SW",
+    "summary": "ECEF나 위경도 좌표를 32비트 float에 저장할 때 유효숫자 부족으로 위치가 최대 0.5~1m 단위로 뚝뚝 끊기는 현상",
+    "description": "IEEE 754 단정도(`float`, 32-bit)는 가수부(Mantissa)가 23비트(숨은 비트 포함 24비트)여서 약 7자리의 십진 유효숫자만 표현합니다. ECEF 좌표가 약 6,378,137 m일 때 최소 분해능(1 ULP)은 2²³ / 2²⁴ = 0.5 m가 됩니다. 따라서 임베디드 C에서 `float`로 좌표를 다루면 RTK나 칼만필터의 cm급 정밀도가 즉시 파괴됩니다.",
+    "formula_or_example": "값 크기 ~ 6.37×10⁶ (2²² < X < 2²³) → float32 ULP = 2^(22-23) = 0.5 m!",
+    "related_modules": ["m01_coords_time", "m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "prn_code",
+    "term_ko": "의사잡음 부호 / 골드 코드",
+    "term_en": "PRN Code / Gold Code (Pseudo-Random Noise)",
+    "category": "신호처리 & 추적",
+    "summary": "각 위성을 구분(CDMA)하고 전파 도달 시간을 측정하기 위해 위성마다 고유하게 할당된 0과 1(±1)의 디지털 시퀀스",
+    "description": "GPS L1 C/A 코드는 길이 1023 칩(Chip), 주기 1 ms(1.023 Mcps)인 Gold Code를 사용합니다. 자기 자신과 시간 정렬이 정확히 맞을 때만 강한 상관 피크(Auto-correlation Peak)가 튀어나오고, 시간이 조금만 어긋나거나 다른 위성의 코드(Cross-correlation)와 곱하면 평균이 0에 가까워져 열잡음 아래에 묻힌 위성 신호를 건져낼 수 있습니다.",
+    "formula_or_example": "GPS L1 C/A: 1023 chips / 1 ms → 1 chip ≈ 977.5 ns ≈ 293.05 m",
+    "related_modules": ["m02_signal_acq_track"]
+  },
+  {
+    "id": "cdma",
+    "term_ko": "코드분할 다중접속",
+    "term_en": "CDMA (Code Division Multiple Access)",
+    "category": "신호처리 & 추적",
+    "summary": "모든 GPS 위성이 동일한 주파수(L1: 1575.42 MHz)를 쓰면서 서로 직교에 가까운 PRN 코드로 신호를 구분하는 방식",
+    "description": "시끄러운 파티장에서 여러 사람이 같은 공간(동일 주파수)에서 동시에 말하더라도 각자 전혀 다른 고유 암호(PRN 코드)로 말하면, 내가 듣고 싶은 사람의 암호만 곱해(역확산, Despreading) 그 사람의 목소리만 복원할 수 있는 원리입니다.",
+    "formula_or_example": "처리 이득(Processing Gain) = 10 log10(1023) ≈ 30.1 dB",
+    "related_modules": ["m02_signal_acq_track"]
+  },
+  {
+    "id": "cn0",
+    "term_ko": "반송파 대 잡음밀도 비",
+    "term_en": "C/N0 (Carrier-to-Noise Density Ratio, dB-Hz)",
+    "category": "신호처리 & 추적",
+    "summary": "1 Hz 대역폭당 잡음 전력 대비 수신된 위성 반송파 전력의 비율 (단위: dB-Hz)",
+    "description": "SNR은 수신기 필터 대역폭(B)에 따라 값이 달라지지만, C/N0는 1 Hz 기준으로 정규화되어 있어 수신기 설계와 무관하게 절대적인 위성 신호 품질을 나타냅니다. 일반적으로 개활지에서 42~50 dB-Hz가 수신되며, 28~30 dB-Hz 이하로 떨어지면 추적 루프가 락(Lock)을 잃기 쉽습니다.",
+    "formula_or_example": "C/N0 [dB-Hz] = SNR [dB] + 10 log10(BW [Hz])",
+    "related_modules": ["m02_signal_acq_track", "m04_antijam_crpa"]
+  },
+  {
+    "id": "doppler_shift",
+    "term_ko": "도플러 편이",
+    "term_en": "Doppler Frequency Shift",
+    "category": "신호처리 & 추적",
+    "summary": "위성과 수신기 사이의 시선 방향(LOS) 상대 속도에 의해 반송파 주파수가 변하는 현상",
+    "description": "GPS 위성은 약 3.9 km/s의 속도로 궤도를 돌기 때문에 지상의 정지 수신기에서도 최대 ±4.5 kHz, 고속 기동 플랫폼(전투기/미사일)에서는 ±10 kHz 이상의 도플러 주파수 오프셋이 발생합니다. 신호 획득(Acquisition) 시 코드 지연뿐만 아니라 도플러 주파수까지 2차원으로 탐색해야 하는 이유입니다.",
+    "formula_or_example": "f_d = -(v_los / c) · f_L1 (시선 속도 800 m/s 접근 시 약 +4.2 kHz)",
+    "related_modules": ["m02_signal_acq_track"]
+  },
+  {
+    "id": "pcps_acquisition",
+    "term_ko": "병렬 코드 위상 탐색 (FFT 신호 획득)",
+    "term_en": "PCPS (Parallel Code Phase Search Acquisition)",
+    "category": "신호처리 & 추적",
+    "summary": "시간 영역의 원형 상관(Circular Correlation)을 FFT를 이용해 주파수 영역 곱셈으로 한 번에 계산하는 고속 획득 기법",
+    "description": "1023개 칩을 0.5칩 간격으로 일일이 시간 영역에서 슬라이딩 상관하면 2046번 루프를 돌아야 하지만, 입력 신호의 FFT와 로컬 PRN 코드 FFT의 켤레복소수(Complex Conjugate)를 곱한 뒤 IFFT를 취하면 모든 코드 지연(Code Phase)에 대한 상관값을 단 한 번에 얻을 수 있습니다.",
+    "formula_or_example": "R(τ) = IFFT{ FFT(x[n] · e^{-j2πf_d n}) · conj(FFT(c[n])) }",
+    "related_modules": ["m02_signal_acq_track"]
+  },
+  {
+    "id": "dll",
+    "term_ko": "지연 고정 루프 (코드 추적 루프)",
+    "term_en": "DLL (Delay Lock Loop)",
+    "category": "신호처리 & 추적",
+    "summary": "Early(빠른), Prompt(정시), Late(늦은) 3개의 상관기를 이용해 PRN 코드의 위상을 정밀하게 쫓아가는 피드백 루프",
+    "description": "획득(Acquisition)이 대략 0.5칩(~150 m) 정밀도로 신호를 찾았다면, DLL은 Prompt 코드를 중심으로 ±0.5칩(또는 ±0.1칩) 간격의 Early와 Late 상관 전력을 비교해 대칭이 되도록 코드 NCO를 조절합니다. 이를 통해 의사거리 측정 정밀도를 미터 이하로 끌어올립니다.",
+    "formula_or_example": "Normalized Early-Minus-Late: e_DLL = (E - L) / (E + L)",
+    "related_modules": ["m02_signal_acq_track"]
+  },
+  {
+    "id": "pll",
+    "term_ko": "위상 고정 루프 (반송파 추적 루프)",
+    "term_en": "PLL (Phase Lock Loop) / Costas Loop",
+    "category": "신호처리 & 추적",
+    "summary": "수신 신호의 반송파 위상과 주파수(도플러)를 정밀하게 추적하여 항법 데이터 비트를 복조하는 루프",
+    "description": "GPS 신호는 50 bps 항법 데이터 비트에 의해 위상이 180° 반전(BPSK)되므로, 위상 판별기(Discriminator)가 180° 위상 반전에 둔감한 `atan(Q_P / I_P)` 형태의 코스타스 루프(Costas Loop)를 사용합니다. 루프 대역폭(B_n)이 너무 넓으면 잡음에 흔들리고, 너무 좁으면 기동(가속도) 시 락을 잃습니다.",
+    "formula_or_example": "Costas 판별기: e_PLL = atan(Q_P / I_P) [rad]",
+    "related_modules": ["m02_signal_acq_track"]
+  },
+  {
+    "id": "pseudorange",
+    "term_ko": "의사거리",
+    "term_en": "Pseudorange (ρ)",
+    "category": "측위 & 오차",
+    "summary": "위성 송신 시각과 수신기 수신 시각의 차이에 광속(c)을 곱해 구한 거리 (수신기 시계 오차가 포함된 거리)",
+    "description": "위성에는 수억 원짜리 원자시계가 실려 있지만, 수신기에는 저렴한 수정발진기(TCXO)가 들어 있어 수신기 시계 오차(δt_u)가 존재합니다. 따라서 전파 비행시간으로 계산한 거리는 실제 기하학적 거리(r)에 시계 오차 거리(c·δt_u)와 대기 지연이 더해진 '가짜(Pseudo) 거리'라는 뜻에서 의사거리라고 부릅니다.",
+    "formula_or_example": "ρ_i = ||p_sat,i - p_u|| + c·δt_u + I_i + T_i + ε_i",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "wls_gauss_newton",
+    "term_ko": "가우스-뉴턴 가중최소자승 측위",
+    "term_en": "Gauss-Newton WLS (Weighted Least Squares) Positioning",
+    "category": "측위 & 오차",
+    "summary": "비선형 의사거리 방정식을 현재 추정 위치 주변에서 1차 테일러 전개(선형화)하여 반복 수렴시키는 표준 측위 알고리즘",
+    "description": "4개 이상의 위성 의사거리로부터 미지수 4개(X, Y, Z, 시계오차 b = c·δt_u)를 구하기 위해 관측 행렬(Geometry Matrix) H를 구성하고, 앙각이 낮아 다중경로와 대기 오차가 큰 위성에 낮은 가중치(W)를 부여해 위치 보정량 Δx를 4~6회 반복 계산합니다.",
+    "formula_or_example": "Δx = (H^T W H)^{-1} H^T W Δρ",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "geometry_matrix",
+    "term_ko": "기하 관측 행렬 (시선 벡터 행렬)",
+    "term_en": "Geometry Matrix / Design Matrix (H)",
+    "category": "측위 & 오차",
+    "summary": "수신기에서 각 위성을 바라보는 단위 시선 벡터(Unit Line-of-Sight Vector)와 시계 오차 항(1)으로 구성된 N×4 행렬",
+    "description": "의사거리 방정식을 수신기 위치로 편미분(Jacobian)하면 각 행이 `[-e_x, -e_y, -e_z, 1]` 형태인 행렬 H가 됩니다. 이 행렬 H의 열벡터들이 공간상에서 얼마나 골고루 퍼져 있는지가 바로 DOP(정밀도 저하율)를 결정합니다.",
+    "formula_or_example": "H_i = [ -(X_i - X_u)/r_i, -(Y_i - Y_u)/r_i, -(Z_i - Z_u)/r_i, 1 ]",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "dop",
+    "term_ko": "정밀도 저하율",
+    "term_en": "DOP (Dilution of Precision: GDOP, PDOP, HDOP, VDOP, TDOP)",
+    "category": "측위 & 오차",
+    "summary": "위성들의 공간 배치(기하학적 구조)에 의해 의사거리 측정 오차가 위치·시각 오차로 몇 배 증폭되는지를 나타내는 무차원 지표",
+    "description": "위성들이 하늘 한구석에 몰려 있으면 의사거리 오차 1m가 위치 오차 수십 m로 증폭(DOP 높음)되고, 사방과 머리 위에 고르게 퍼져 있으면 DOP가 낮아져(PDOP < 2.5 양호) 정밀한 위치를 얻습니다. 특히 위성은 항상 땅 아래에는 없고 위쪽 하늘(반구)에만 있으므로 수직 정밀도 저하율(VDOP)이 수평(HDOP)보다 항상 나쁩니다.",
+    "formula_or_example": "Q = (H_enu^T H_enu)^{-1}, HDOP = sqrt(Q_11 + Q_22), VDOP = sqrt(Q_33), PDOP = sqrt(HDOP² + VDOP²)",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "uere",
+    "term_ko": "사용자 등가 거리 오차",
+    "term_en": "UERE (User Equivalent Range Error)",
+    "category": "측위 & 오차",
+    "summary": "위성 시계/궤도 오차, 전리층/대류권 지연, 다중경로, 수신기 잡음을 모두 합산한 의사거리 1개의 등가 표준편차(σ)",
+    "description": "최종 3차원 위치 오차의 표준편차는 대략 `σ_pos ≈ PDOP × σ_UERE`로 결정됩니다. 즉 측위 정밀도를 높이려면 위성 배치를 좋게 하거나(DOP 감소), SBAS/RTK 등의 보정정보로 UERE 자체를 줄여야 합니다.",
+    "formula_or_example": "일반 단독 측위 UERE ≈ 3~6 m, SBAS 적용 시 UERE ≈ 1~1.5 m",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "ionospheric_delay",
+    "term_ko": "전리층 지연",
+    "term_en": "Ionospheric Delay",
+    "category": "측위 & 오차",
+    "summary": "고도 50~1000 km 전리층의 자유전자에 의해 GNSS 전파의 군속도가 느려져 발생하는 거리 오차 (단독 측위 최대 오차 요인)",
+    "description": "낮 시간대나 태양 활동 극대기, 그리고 위성 앙각이 낮아 전리층을 비스듬히 길게 통과할 때 오차가 수 미터에서 수십 미터까지 커집니다. 주파수에 따라 굴절률이 다른 분산 매질(Dispersive Medium)이므로 L1/L2 이중 주파수 수신기는 이를 직접 제거할 수 있고, 단일 주파수 수신기는 Klobuchar 모델이나 SBAS 격자 보정정보를 사용합니다.",
+    "formula_or_example": "I_delay ∝ TEC / f² (앙각이 낮을수록 경사 계수 Obliquity Factor 증가)",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "tropospheric_delay",
+    "term_ko": "대류권 지연",
+    "term_en": "Tropospheric Delay",
+    "category": "측위 & 오차",
+    "summary": "고도 50 km 이하 중성 대기(건조 공기 및 수증기)에 의해 전파가 굴절·지연되는 오차",
+    "description": "전리층과 달리 주파수에 무관한 비분산(Non-dispersive) 매질이므로 이중 주파수로도 제거되지 않습니다. 천정 방향(앙각 90°)에서 약 2.3~2.5 m 수준이며, 앙각(El)이 낮아질수록 `1 / sin(El)`에 비례해 급격히 증가하므로 보통 앙각 5°~10° 이하 위성은 측위에서 배제(Mask Angle)합니다.",
+    "formula_or_example": "T(El) ≈ T_zenith / sin(El) (천정 지연 약 2.4 m, 앙각 10°에서 약 14 m)",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "sbas",
+    "term_ko": "위성 기반 보강 항법 시스템",
+    "term_en": "SBAS (Satellite-Based Augmentation System, 예: KASS, WAAS, EGNOS)",
+    "category": "측위 & 오차",
+    "summary": "지상 기준국 네트워크가 측정한 전리층·위성 궤도/시계 오차 보정정보를 정지궤도 위성(GEO)을 통해 방송하는 광역 보정 시스템",
+    "description": "대한민국의 KASS, 미국의 WAAS 등이 대표적입니다. 별도의 통신 모뎀 없이 기존 GNSS 안테나와 수신기 채널만으로 정지궤도 위성이 보내는 보정 메시지와 무결성(Integrity) 경보를 수신해 단독 측위 오차를 1~2 m 수준으로 줄여줍니다.",
+    "related_modules": ["m03_pvt_dop"],
+    "formula_or_example": "보정 의사거리: ρ_corr = ρ_raw - Δρ_sbas_iono - Δρ_sbas_fast_long"
+  },
+  {
+    "id": "crpa",
+    "term_ko": "제어 방사패턴 배열 안테나",
+    "term_en": "CRPA (Controlled Reception Pattern Antenna)",
+    "category": "항재밍 & 배열신호",
+    "summary": "여러 개의 안테나 소자(Element)에 수신된 신호의 위상과 진폭 가중치를 실시간 제어해 재머 방향으로는 널(Null)을, 위성 방향으로는 빔(Beam)을 형성하는 항재밍 안테나",
+    "description": "단일 안테나는 재밍 신호가 들어오면 속수무책으로 포화되지만, N개의 안테나 소자로 구성된 CRPA는 공간 필터링(Spatial Filtering)을 통해 최대 N-1개의 독립적인 재머 방향의 이득을 -40 dB 이하로 깎아내어(Nulling) 재밍 환경에서도 위성 신호를 살려냅니다.",
+    "formula_or_example": "y(t) = w^H x(t), N소자 배열은 최대 (N - 1)개의 공간 자유도(DoF) 보유",
+    "related_modules": ["m04_antijam_crpa"]
+  },
+  {
+    "id": "steering_vector",
+    "term_ko": "조향 벡터 (배열 매니폴드 벡터)",
+    "term_en": "Steering Vector / Array Manifold Vector a(θ)",
+    "category": "항재밍 & 배열신호",
+    "summary": "특정 입사각(θ)에서 평면파가 들어올 때 기준 안테나 소자 대비 각 배열 소자에 발생하는 기하학적 위상차 벡터",
+    "description": "안테나 소자 간격이 d(보통 반파장 λ/2 ≈ 9.5 cm)인 균일 선형 배열(ULA)에 입사각 θ로 전파가 들어오면, 인접 소자 간 경로차 `d·sin(θ)`만큼 위상이 지연됩니다. 이 위상 지연들을 복소 지수 벡터로 묶은 것이 조향 벡터이며 모든 빔포밍/널링 수식의 출발점입니다.",
+    "formula_or_example": "a(θ) = [1, e^{j(2πd/λ)sinθ}, ..., e^{j(2πd/λ)(N-1)sinθ}]^T",
+    "related_modules": ["m04_antijam_crpa"]
+  },
+  {
+    "id": "covariance_matrix_rxx",
+    "term_ko": "공간 공분산 행렬",
+    "term_en": "Spatial Covariance Matrix (R_xx)",
+    "category": "항재밍 & 배열신호",
+    "summary": "배열 안테나 각 소자 수신 신호 벡터 x(t)의 자기상관 및 상호상관 정보를 담고 있는 N×N 에르미트(Hermitian) 행렬",
+    "description": "위성 신호는 열잡음보다 약 20~30 dB 낮기 때문에 상관 전(Pre-correlation) 수신 신호 공분산 행렬 R_xx는 사실상 '강력한 재머 신호 + 열잡음'이 지배합니다. 따라서 R_xx의 역행렬(R_xx^{-1})을 곱하면 에너지가 큰 방향(즉 재머 방향)을 자동으로 억누르는 효과가 나타납니다.",
+    "formula_or_example": "R_xx = E[x(t) x^H(t)] ≈ (1/K) Σ x[k] x^H[k] + δ·I (Diagonal Loading)",
+    "related_modules": ["m04_antijam_crpa"]
+  },
+  {
+    "id": "power_minimization",
+    "term_ko": "전력 최소화 널링 (구속조건부 최소분산)",
+    "term_en": "Power Minimization / PI (Power Inversion) Adaptive Nulling",
+    "category": "항재밍 & 배열신호",
+    "summary": "위성의 입사 방향을 몰라도 기준 안테나(1번 소자) 가중치를 1로 고정한 채 전체 출력 전력을 최소화하여 재머를 제거하는 기법",
+    "description": "GNSS 신호는 잡음 바닥 아래에 숨어 있으므로, 배열 출력 전력을 무조건 최소화하도록 가중치를 풀면 잡음보다 훨씬 센 신호(즉 재머)만 골라서 널(Null)을 꽂아버립니다. 위성 방향 정보(자세 센서)가 전혀 필요 없어 군용/산업용 소형 항재밍 장치(GAJT 등)에서 가장 널리 쓰입니다.",
+    "formula_or_example": "w_PM = (R_xx^{-1} δ_1) / (δ_1^H R_xx^{-1} δ_1), 여기서 δ_1 = [1, 0, ..., 0]^T",
+    "related_modules": ["m04_antijam_crpa"]
+  },
+  {
+    "id": "mvdr_capon",
+    "term_ko": "최소분산 무왜곡 응답 빔포머",
+    "term_en": "MVDR (Minimum Variance Distortionless Response) / Capon Beamformer",
+    "category": "항재밍 & 배열신호",
+    "summary": "원하는 위성 방향(θ_s)의 이득은 1(0 dB)로 완벽히 보존하면서 나머지 방향의 간섭·재밍 전력을 최소화하는 최적 공간 필터",
+    "description": "INS나 알마낙을 통해 보호하고자 하는 위성의 입사각 조향 벡터 a(θ_s)를 알고 있을 때 사용합니다. 재머 방향에 깊은 널(Null)을 형성함과 동시에 위성 방향으로 메인 빔을 조향하여 C/N0를 극대화합니다.",
+    "formula_or_example": "w_MVDR = (R_xx^{-1} a(θ_s)) / (a^H(θ_s) R_xx^{-1} a(θ_s))",
+    "related_modules": ["m04_antijam_crpa"]
+  },
+  {
+    "id": "jsr",
+    "term_ko": "재밍 대 신호 전력비",
+    "term_en": "J/S Ratio (Jamming-to-Signal Ratio, dB)",
+    "category": "항재밍 & 배열신호",
+    "summary": "수신 안테나에 유입된 위성 신호 전력(S) 대비 재밍 간섭 신호 전력(J)의 비율",
+    "description": "위성 신호 자체가 워낙 미약(-130 dBm)하기 때문에 소출력 재머만 있어도 J/S가 40~80 dB에 달합니다. CDMA 확산 이득이 약 30 dB이므로 단일 안테나 수신기는 J/S가 30~35 dB를 넘으면 무력화되지만, CRPA를 결합하면 70~90 dB의 극한 J/S에서도 항법을 유지할 수 있습니다.",
+    "formula_or_example": "J/S [dB] = P_jammer [dBm] - P_signal [dBm]",
+    "related_modules": ["m04_antijam_crpa", "m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "imu",
+    "term_ko": "관성측정장치",
+    "term_en": "IMU (Inertial Measurement Unit)",
+    "category": "통합항법 & 칼만필터",
+    "summary": "3축 가속도계(Accelerometer)와 3축 자이로스코프(Gyroscope)로 구성되어 외부 전파 없이 비력(Specific Force)과 각속도를 측정하는 센서",
+    "description": "GNSS는 장기적으로 오차가 누적되지 않지만 출력 주기(1~10 Hz)가 느리고 터널·도심·재밍 환경에서 신호가 끊깁니다. 반면 IMU는 외부 재밍에 절대 영향을 받지 않고 100~1000 Hz로 고속 동작하지만, 적분 과정에서 바이어스 오차가 시간에 따라 폭발적으로 누적(Drift)되므로 두 센서는 완벽한 상호보완 관계를 가집니다.",
+    "formula_or_example": "고속 추측항법(Dead Reckoning) + GNSS 보정 → GNSS/INS 통합항법",
+    "related_modules": ["m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "dead_reckoning",
+    "term_ko": "추측항법 / 관성 적분",
+    "term_en": "Dead Reckoning / INS Mechanization",
+    "category": "통합항법 & 칼만필터",
+    "summary": "이전 위치·속도·자세 상태에서 각속도와 가속도를 연속 적분하여 현재의 항법 상태를 계산하는 과정",
+    "description": "자이로 각속도를 적분해 자세(Attitude)를 구하고, 그 자세로 가속도계 측정값을 항법 좌표계로 회전시킨 뒤 중력을 빼고 한 번 적분하면 속도, 두 번 적분하면 위치가 됩니다. 가속도 바이어스는 시간의 제곱(t²), 자이로 바이어스는 시간의 세제곱(t³)에 비례하는 위치 표류를 유발합니다.",
+    "formula_or_example": "위치 표류 Δp ≈ (1/2) b_a t² + (1/6) g · b_g t³",
+    "related_modules": ["m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "error_state_ekf",
+    "term_ko": "오차 상태 확장 칼만 필터 (간접 칼만 필터)",
+    "term_en": "Error-State EKF (ESKF / Indirect Extended Kalman Filter)",
+    "category": "통합항법 & 칼만필터",
+    "summary": "전체 위치·속도·자세 자체가 아니라 INS 적분값의 '오차(δp, δv, δψ)와 센서 바이어스(b_a, b_g)'만을 상태변수로 추정하는 실무 표준 칼만 필터",
+    "description": "항공기나 차량의 고기동 전체 상태(Total State)는 비선형성이 강하고 고속으로 변하지만, 오차 상태(Error State)는 항상 0 근처의 작은 값이므로 1차 선형화 가정이 매우 정확하게 성립합니다. 또한 고속 IMU 적분 루프(예: 200 Hz)와 저속 칼만 필터 갱신 루프(예: 1~10 Hz)를 분리할 수 있어 임베디드 실시간성에 유리합니다.",
+    "formula_or_example": "δx = [δp, δv, δψ, b_a, b_g]^T → GNSS 측정 시 δx 추정 후 명목 상태(Nominal State)에 주입(Injection) 및 리셋",
+    "related_modules": ["m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "loosely_coupled",
+    "term_ko": "약결합 GNSS/INS 통합",
+    "term_en": "Loosely Coupled GNSS/INS Integration",
+    "category": "통합항법 & 칼만필터",
+    "summary": "GNSS 수신기가 산출한 최종 위치·속도(PVT)와 INS의 위치·속도 차이를 칼만 필터의 측정치(Measurement)로 사용하는 통합 방식",
+    "description": "구조가 단순하고 어떤 상용 GNSS 모듈과도 쉽게 결합할 수 있는 장점이 있습니다. 단, 가시 위성이 4개 미만으로 줄어들어 GNSS 수신기가 위치(PVT) 산출을 포기하면 칼만 필터 측정 갱신이 완전히 중단됩니다(위성 3개 이하에서도 융합하려면 의사거리를 직접 쓰는 강결합 Tightly Coupled 필요).",
+    "formula_or_example": "측정 잔차(Innovation): z = p_INS - p_GNSS",
+    "related_modules": ["m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "kalman_gain",
+    "term_ko": "칼만 이득과 공분산 행렬",
+    "term_en": "Kalman Gain (K) & Covariance Matrices (P, Q, R)",
+    "category": "통합항법 & 칼만필터",
+    "summary": "예측 오차 공분산(P)과 측정 잡음 공분산(R)의 상대적 불확실성을 비교해 새로운 GNSS 측정치를 얼마나 신뢰할지 결정하는 최적 가중치",
+    "description": "Q(시스템/IMU 잡음 공분산)가 크면 예측 불확실성 P가 빠르게 커져 GNSS 측정치를 더 많이 반영(K 증가)하고, R(GNSS 측정 잡음 공분산)을 크게 설정하면 GNSS가 튀더라도 INS 궤적을 더 신뢰(K 감소)하여 부드러운 궤적을 유지합니다. GNSS Outage(재밍) 구간에서는 측정 갱신이 생략되어 P가 계속 팽창합니다.",
+    "formula_or_example": "K = P⁻ H^T (H P⁻ H^T + R)^{-1}, P⁺ = (I - K H) P⁻ (I - K H)^T + K R K^T (Joseph 안정화 형태)",
+    "related_modules": ["m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "joseph_form",
+    "term_ko": "조셉 형태 공분산 갱신",
+    "term_en": "Joseph Form Covariance Update",
+    "category": "임베디드 SW",
+    "summary": "부동소수점 반올림 오차로 인해 칼만 필터 공분산 행렬 P의 대칭성이나 양정치성(Positive Definiteness)이 깨져 필터가 발산하는 것을 막는 수치 안정화 기법",
+    "description": "교과서에 나오는 단순 식 `P = (I - KH)P`는 임베디드 C에서 장시간 구동 시 뺄셈 과정에서 대칭성이 깨지고 대각 원소(분산)가 음수가 되어 `sqrt` 연산 시 NaN 폭주를 일으킬 수 있습니다. 조셉 형태는 이차 형식(Quadratic Form)의 합으로 구성되어 항상 대칭성과 양정치성을 보장합니다.",
+    "formula_or_example": "P⁺ = (I - K H) P⁻ (I - K H)^T + K R K^T",
+    "related_modules": ["m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "diagonal_loading",
+    "term_ko": "대각 로딩 (정칙화)",
+    "term_en": "Diagonal Loading / Tikhonov Regularization",
+    "category": "임베디드 SW",
+    "summary": "역행렬 계산 전 행렬 대각선 원소에 작은 양수(δ·I)를 더해 조건수(Condition Number) 불량 및 0 나눗셈을 방지하는 기법",
+    "description": "항재밍 공분산 행렬 R_xx를 적은 샘플로 추정하거나 WLS에서 위성 배치가 극도로 불량할 때 행렬이 특이 행렬(Singular Matrix)에 가까워져 역행렬이 폭발합니다. 대각선에 미세한 잡음 전력 `δ·I`를 더해주면 수치적 안정성과 사이드로브 억제 성능을 동시에 얻을 수 있습니다.",
+    "formula_or_example": "R_loaded = R_xx + δ · I",
+    "related_modules": ["m03_pvt_dop", "m04_antijam_crpa"]
+  },
+  {
+    "id": "sagnac_effect",
+    "term_ko": "사냑 효과 (지구 자전 보정)",
+    "term_en": "Sagnac Effect (Earth Rotation Correction)",
+    "category": "측위 & 오차",
+    "summary": "위성에서 송신된 전파가 지상 수신기에 도달하는 약 67~80 ms 동안 지구(ECEF 좌표계)가 자전하여 발생하는 거리 오차",
+    "description": "위성 송신 시점의 ECEF 좌표와 수신 시점의 ECEF 좌표는 지구 자전 각속도(ω_e = 7.292115×10⁻⁵ rad/s)만큼 회전되어 있습니다. 이를 보정하지 않으면 동서 방향으로 최대 20~30 m의 측위 편향 오차가 발생합니다.",
+    "formula_or_example": "Δr_sagnac ≈ (ω_e / c) · (X_sat · Y_rx - Y_sat · X_rx)",
+    "related_modules": ["m03_pvt_dop"]
+  },
+  {
+    "id": "tightly_coupled",
+    "term_ko": "강결합 / 초강결합 GNSS/INS 통합",
+    "term_en": "Tightly Coupled & Ultra-Tightly Coupled GNSS/INS",
+    "category": "통합항법 & 칼만필터",
+    "summary": "수신기의 최종 위치(PVT)가 아니라 각 위성의 원시 의사거리(Pseudorange)와 도플러 측정치를 직접 칼만 필터에 융합하는 방식",
+    "description": "약결합(Loosely Coupled)은 가시 위성이 3개 이하로 떨어지면 GNSS 측위가 중단되지만, 강결합(Tightly Coupled)은 위성이 1~3개만 보여도 그 방향의 의사거리로 INS 표류를 억제합니다. 초강결합(Ultra-Tight)은 나아가 INS 속도 정보로 PLL/DLL 추적 루프의 NCO를 직접 보조해 항재밍 성능을 10~15 dB 향상시킵니다.",
+    "formula_or_example": "z_i = ρ_GNSS,i - ||p_sat,i - p_INS|| - b_clock",
+    "related_modules": ["m02_signal_acq_track", "m05_gnss_ins_ekf"]
+  },
+  {
+    "id": "rtk_carrier_phase",
+    "term_ko": "실시간 이동측위 & 반송파 위상 미지정수",
+    "term_en": "RTK (Real-Time Kinematic) & Integer Ambiguity (LAMBDA)",
+    "category": "측위 & 오차",
+    "summary": "코드(1 칩 ≈ 293 m) 대신 파장이 19 cm에 불과한 L1 반송파 위상(Carrier Phase)과 기준국 이중차분을 이용해 cm급 정밀도를 얻는 기술",
+    "description": "반송파 위상은 정밀도가 수 mm 수준이지만, 위성에서 수신기까지 파장(19 cm)이 몇 번 반복되었는지를 나타내는 정수 미지정수(Integer Ambiguity, N)를 모릅니다. 이중차분(Double Difference)으로 대기/시계 오차를 소거한 뒤 LAMBDA 알고리즘으로 정수 N을 확정(Fix)하면 1~2 cm 정밀도의 측위가 가능합니다.",
+    "formula_or_example": "Φ = r + I - T + c·δt + λ·N + ε_Φ (λ_L1 ≈ 19.03 cm)",
+    "related_modules": ["m02_signal_acq_track", "m03_pvt_dop"]
+  },
+  {
+    "id": "spoofing",
+    "term_ko": "위성항법 기만 공격 및 항기만",
+    "term_en": "GNSS Spoofing & Anti-Spoofing",
+    "category": "항재밍 & 배열신호",
+    "summary": "가짜 GPS 위성 신호를 송출하여 수신기가 잘못된 위치나 잘못된 시각을 정상 신호로 믿도록 유도하는 공격",
+    "description": "재밍(Jamming)은 잡음으로 수신기를 마비시켜 즉시 인지할 수 있지만, 스푸핑(Spoofing)은 실제 신호보다 살짝 강한 가짜 PRN 신호로 추적 루프(DLL/PLL)를 납치하므로 더 위험합니다. CRPA 배열 안테나로 모든 위성 신호가 동일한 단일 방향(기만기 방향)에서 들어오는지(DOA 검증) 확인하거나 INS 정합성 검사(RAIM)로 탐지합니다.",
+    "formula_or_example": "항기만 기법: CRPA 입사각(DOA) 일치성 검증, C/N0 급등 감시, INS 잔차 카이제곱 검정",
+    "related_modules": ["m02_signal_acq_track", "m04_antijam_crpa", "m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "stap_sfap",
+    "term_ko": "시공간 / 공간-주파수 적응 신호처리",
+    "term_en": "STAP (Space-Time Adaptive Processing) & SFAP (Space-Frequency)",
+    "category": "항재밍 & 배열신호",
+    "summary": "N개의 안테나 소자 뒤에 각각 L탭의 시간 지연 필터(FIR)를 결합하여 광대역·다중경로 재머까지 억제하는 고급 군용 항재밍 기술",
+    "description": "단순 공간 널링(SAP)은 협대역 재머에만 효과적이며 재밍 전파가 지형이나 기체에 반사(다중경로)되어 들어오면 공간 자유도(N-1)가 순식간에 고갈됩니다. STAP은 N개 안테나 × L개 시간 탭(총 N·L차원 공분산 행렬)을 사용하여 주파수 선택적 페이딩과 광대역 첩(Chirp) 재머를 시공간 영역에서 동시에 널링합니다. SFAP은 이를 FFT 주파수 빈(Bin)별로 분할 연산하여 연산량을 줄인 방식입니다.",
+    "formula_or_example": "STAP 가중치 차원: N×L (예: 4소자 × 5탭 = 20차원 복소 가중치), 주파수 의존 널 형성 가능",
+    "related_modules": ["m04_antijam_crpa", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "raim_fde",
+    "term_ko": "수신기 자율 무결성 감시 및 고장 분리",
+    "term_en": "RAIM (Receiver Autonomous Integrity Monitoring) & FDE (Fault Detection and Exclusion)",
+    "category": "측위 & 오차",
+    "summary": "외부 보정국 없이 5기 이상의 잉여 가시 위성 의사거리 잔차(Residual) 일관성을 검정해 고장/기만 위성을 스스로 찾아내 배제하는 기술",
+    "description": "미지수 4개(X, Y, Z, 시계)에 대해 위성이 5개 이상이면 최소자승 해를 구하고 남은 잔차 벡터(r)의 크기로부터 위성 고장 여부를 판정(5기 이상: Fault Detection)할 수 있고, 위성이 6개 이상이면 어느 위성이 고장 났는지 특정하여 측위에서 제외(6기 이상: Fault Exclusion)할 수 있습니다. 유도무기·항공기 항법 SW의 필수 무결성 모듈입니다.",
+    "formula_or_example": "검정 통계량 WSSE = r^T W r ~ χ²(N - 4), 정규화 잔차 |r_i| / sqrt(S_ii) 최대 위성 분리",
+    "related_modules": ["m03_pvt_dop", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "coning_sculling",
+    "term_ko": "코닝 및 스컬링 보정",
+    "term_en": "Coning & Sculling Motion Compensation",
+    "category": "통합항법 & 칼만필터",
+    "summary": "유도무기·항공기의 고주파 진동 환경에서 유한 샘플링 주기로 각속도·가속도를 적분할 때 발생하는 비가환성 회전/가속 오차를 보상하는 스트랩다운 INS 핵심 알고리즘",
+    "description": "3차원 유한 회전은 교환법칙이 성립하지 않기 때문에(비가환성), 두 축이 위상차를 두고 진동하면 실제로는 회전하지 않았는데도 원뿔(Cone) 축 방향으로 거짓 각속도 드리프트가 누적되는 '코닝(Coning) 효과'가 발생합니다. 마찬가지로 각진동과 선형 진동이 결합되어 거짓 속도가 누적되는 현상을 '스컬링(Sculling) 효과'라 합니다. 고속 IMU 증분각(Δθ)/증분속도(Δv)의 외적(Cross Product)으로 이를 반드시 보상해야 합니다.",
+    "formula_or_example": "2-샘플 코닝 보정: δϕ_coning = (2/3) · (Δθ_{k-1} × Δθ_k), 스컬링: δv_scull = (1/2) · (Δθ × Δv)",
+    "related_modules": ["m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "lever_arm",
+    "term_ko": "레버암 효과 및 장착 오프셋 보정",
+    "term_en": "Lever-Arm Effect & Antenna-to-IMU Offset Compensation",
+    "category": "통합항법 & 칼만필터",
+    "summary": "기체 내부에 장착된 IMU와 기체 외부 표면에 장착된 GNSS(CRPA) 안테나 사이의 물리적 거리 오프셋(l^b)으로 인해 기체 회전 시 위치·속도 측정치가 어긋나는 현상",
+    "description": "유도탄이나 무인기에서 IMU는 무게중심 근처에, CRPA 안테나는 동체 상부에 장착되어 수십 cm ~ 수 m 떨어져 있습니다. 기체가 급격히 롤/피치/요 회전(각속도 ω)을 하면 안테나는 `v_ant = v_imu + C_b^n (ω × l^b)`의 추가 접선 속도를 겪습니다. 칼만 필터 측정 갱신 시 이 레버암 벡터를 보상하지 않으면 선회할 때마다 거짓 바이어스가 추정되어 필터가 망가집니다.",
+    "formula_or_example": "p_GNSS = p_INS + C_b^n · l^b,  v_GNSS = v_INS + C_b^n · (ω_ib^b × l^b)",
+    "related_modules": ["m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "time_tag_latency",
+    "term_ko": "타임태그 지연 동기화 및 링버퍼 매칭",
+    "term_en": "Time-Tag Latency Compensation & IMU Ring-Buffer Synchronization",
+    "category": "임베디드 SW",
+    "summary": "1PPS 유효 시각(Time of Validity)에 측정된 GNSS 위치가 신호처리 및 통신 지연(Δt_lat)을 거쳐 칼만 필터에 늦게 도착할 때 발생하는 시간 불일치를 보상하는 기법",
+    "description": "마하 2(약 680 m/s)로 비행하는 유도무기에서 GNSS 패킷이 50 ms 늦게 도착했을 때 현재 시점의 INS 위치와 그냥 빼버리면 34 m의 거짓 위치 오차가 발생합니다! 따라서 INS 태스크는 최근 1초 치의 명목 상태와 공분산 전파 이력을 링버퍼(Ring Buffer)에 저장해 두었다가, 1PPS 타임태그 시점의 과거 INS 상태와 GNSS를 비교해 잔차를 구한 뒤 현재 시점으로 재전파(Delayed-State Update)해야 합니다.",
+    "formula_or_example": "1차 지연 보상 근사: p_GNSS(t_now) ≈ p_GNSS(t_pps) + v_INS · (t_now - t_pps)",
+    "related_modules": ["m01_coords_time", "m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "initial_alignment",
+    "term_ko": "INS 초기 정렬 및 비행 중 정렬",
+    "term_en": "INS Initial Alignment (Coarse / Fine / Gyrocompassing) & In-Flight Alignment (IFA)",
+    "category": "통합항법 & 칼만필터",
+    "summary": "출발 전 또는 비행 중에 가속도계로 중력 벡터(롤/피치)를, 자이로 또는 기동 가속도로 진북 방위각(헤딩)을 찾아내어 자세 변환 행렬(C_b^n)을 초기화하는 과정",
+    "description": "가속도계는 중력 가속도(g)를 감지하므로 정지 상태에서도 롤(Roll)과 피치(Pitch)를 즉시 알 수 있지만(개략 정렬, Coarse Alignment), 수평 방위각(Yaw/Heading)은 중력과 수직이라 정지 상태에서 가속도계로 알 수 없습니다. 고가형 전술 IMU는 지구 자전 각속도(15°/hr)를 감지해 진북을 찾고(자이로컴퍼싱), 저가형 MEMS IMU는 발사/주행 직후 가속 및 선회 기동 중 GNSS 속도 벡터와 칼만 필터 가관측성을 이용해 비행 중 정렬(In-Flight Alignment)을 수행합니다.",
+    "formula_or_example": "수평 가속도 a_E, a_N 기동 시 방위각 오차 δψ 가관측성 확보: δv_dot ≈ -a_N·δψ (동), +a_E·δψ (북)",
+    "related_modules": ["m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "chi_square_gating",
+    "term_ko": "카이제곱 측정치 기각 게이팅 (마할라노비스 거리)",
+    "term_en": "Chi-Square Innovation Gating (Mahalanobis Distance Test)",
+    "category": "통합항법 & 칼만필터",
+    "summary": "칼만 필터 측정 갱신 직전 이노베이션(잔차) z_k가 통계적 공분산 S_k 범위 안에 있는지 검정하여 다중경로·기만·글리치 측정치를 거부하는 방어 로직",
+    "description": "GNSS 수신기가 순간적인 재밍이나 스푸핑, 다중경로로 인해 수십 미터 튄 잘못된 위치를 출력했을 때 칼만 필터가 이를 그대로 수용하면 정성껏 추정한 IMU 바이어스와 자세가 한 번에 오염됩니다. 정규화 이노베이션 제곱(NIS, 마할라노비스 거리 제곱) γ_k = z_k^T S_k^{-1} z_k를 계산해 카이제곱 임계값(예: 자유도 3에서 99% 임계값 11.34)을 넘으면 해당 측정치를 즉시 버립니다.",
+    "formula_or_example": "γ_k = z_k^T (H P^- H^T + R)^{-1} z_k > χ²_{m, 0.99} 이면 측정 갱신 Skip!",
+    "related_modules": ["m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "ud_factorization",
+    "term_ko": "UD 분해 칼만 필터",
+    "term_en": "UD Factorization Filter (Bierman-Thornton Algorithm)",
+    "category": "임베디드 SW",
+    "summary": "오차 공분산 행렬 P를 단위 상삼각 행렬 U와 대각 행렬 D로 분해(P = U D U^T)하여 제곱근(sqrt) 연산 없이 수치적 양정치성을 100% 보장하는 항공우주/방산 표준 필터",
+    "description": "조셉 형태(Joseph Form)와 더불어 항공기·유도무기 항법 컴퓨터(EGI)에서 가장 널리 쓰이는 수치 안정화 기법입니다. 공분산 행렬 자체 대신 분해된 인자 U와 D(유효숫자 동적 범위가 절반으로 줄어듦)만 시간 전파(Thornton) 및 스칼라 측정 갱신(Bierman)하므로 단정도/고정소수점 환경에서도 공분산 발산을 완벽히 막아줍니다.",
+    "formula_or_example": "P = U D U^T (U: 대각원소가 1인 상삼각 행렬, D: 양수 대각 행렬 d_i > 0)",
+    "related_modules": ["m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "sqm_anti_spoof",
+    "term_ko": "신호 품질 감시 기반 항기만",
+    "term_en": "SQM (Signal Quality Monitoring) for Pull-off Spoofing Detection",
+    "category": "항재밍 & 배열신호",
+    "summary": "기만 신호(Spoofer)가 실제 위성 신호의 상관 피크에 포개어져 추적 루프를 천천히 끌고 갈 때(Pull-off) 발생하는 상관 삼각형의 비대칭 일그러짐을 탐지하는 기법",
+    "description": "정교한 스푸퍼는 먼저 실제 위성 신호와 동일한 코드 위상으로 맞춘 뒤 전력을 살짝 높여 상관 피크를 장악하고 서서히 지연을 이동시킵니다. 이 과정에서 실제 피크와 가짜 피크가 겹치며 상관 삼각형의 양쪽 경사가 비대칭으로 찌그러집니다. 다중 상관기(Early, Prompt, Late)의 대칭 비율 지표(Ratio/Delta Metric)를 감시하면 루프가 납치되기 직전에 기만 공격을 포착할 수 있습니다.",
+    "formula_or_example": "Delta Metric: M_Δ = (I_E - I_L) / (2 · I_P), Ratio Metric: M_R = (I_E + I_L) / (2 · I_P)",
+    "related_modules": ["m02_signal_acq_track", "m06_egi_raim_spoof"]
+  },
+  {
+    "id": "third_order_fll_pll",
+    "term_ko": "고기동 3차 FLL 보조 PLL 추적 루프",
+    "term_en": "3rd-Order FLL-Assisted PLL with INS Carrier-Aiding",
+    "category": "신호처리 & 추적",
+    "summary": "고G 가속도와 저크(Jerk, 가속도 변화율)가 작용하는 유도무기·전투기에서 반송파 락(Lock)을 유지하기 위한 3차 루프 필터 및 INS 도플러 보조 기법",
+    "description": "2차 PLL은 일정 속도(도플러 상수)에는 정상상태 위상 오차가 0이지만, 가속도에는 위상 오차가 남고 저크(Jerk, m/s³)에는 발산합니다. 반면 3차 PLL은 가속도 기동에서도 정상상태 오차가 0이며, 여기에 INS가 계산한 시선 방향 가속도/속도를 NCO에 피드포워드(INS Carrier-Aiding)해주면 루프 대역폭을 5 Hz 이하로 극도로 좁혀 항재밍 문턱값을 10 dB 이상 높일 수 있습니다.",
+    "formula_or_example": "f_NCO = f_doppler_INS + Filter_3rd_PLL(e_PLL) + Filter_2nd_FLL(e_FLL)",
+    "related_modules": ["m02_signal_acq_track", "m05_gnss_ins_ekf", "m06_egi_raim_spoof"]
+  }
+]

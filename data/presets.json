@@ -1,0 +1,270 @@
+{
+  "m01_coords_time": {
+    "seoul_city_hall": {
+      "name": "1. 서울 시청 (도심 기준점 · 표준 TCXO 20ppm)",
+      "lat_deg": 37.5665,
+      "lon_deg": 126.9780,
+      "alt_m": 65.0,
+      "target_east_m": 250.0,
+      "target_north_m": 400.0,
+      "target_up_m": 30.0,
+      "leap_seconds": 18,
+      "pps_jitter_ns": 25.0,
+      "mcu_drift_ppm": 20.0
+    },
+    "daejeon_add_kaist": {
+      "name": "2. 대전 연구단지 (정밀 OCXO 5ppm · 1PPS 15ns)",
+      "lat_deg": 36.3721,
+      "lon_deg": 127.3604,
+      "alt_m": 92.0,
+      "target_east_m": -500.0,
+      "target_north_m": 850.0,
+      "target_up_m": 120.0,
+      "leap_seconds": 18,
+      "pps_jitter_ns": 15.0,
+      "mcu_drift_ppm": 5.0
+    },
+    "jeju_airspace": {
+      "name": "3. 제주 남방 고고도 항공기 (고도 10.5km · 50ppm)",
+      "lat_deg": 33.5104,
+      "lon_deg": 126.4914,
+      "alt_m": 10500.0,
+      "target_east_m": 1200.0,
+      "target_north_m": -900.0,
+      "target_up_m": -350.0,
+      "leap_seconds": 18,
+      "pps_jitter_ns": 45.0,
+      "mcu_drift_ppm": 50.0
+    },
+    "equator_quito": {
+      "name": "4. 적도 고산 지대 (위도 0° · 최소 곡률반경 N=a 확인)",
+      "lat_deg": 0.0000,
+      "lon_deg": -78.4678,
+      "alt_m": 2850.0,
+      "target_east_m": 100.0,
+      "target_north_m": 100.0,
+      "target_up_m": 0.0,
+      "leap_seconds": 18,
+      "pps_jitter_ns": 20.0,
+      "mcu_drift_ppm": 30.0
+    }
+  },
+  "m02_signal_acq_track": {
+    "open_sky_strong": {
+      "name": "1. 개활지 강신호 (C/N0 46 dB-Hz · 표준 E-L 0.5 chip)",
+      "prn_main": 1,
+      "prn_other": 7,
+      "cn0_dbhz": 46.0,
+      "true_code_delay_chips": 340.0,
+      "true_doppler_hz": 1250.0,
+      "coh_ms": 1,
+      "correlator_spacing_chips": 0.5,
+      "pll_bw_hz": 18.0,
+      "dll_bw_hz": 2.0,
+      "init_freq_err_hz": 25.0
+    },
+    "urban_weak_narrow": {
+      "name": "2. 도심 약신호 & 협소 상관기 (33 dB-Hz · Narrow 0.2 chip · 4ms 적분)",
+      "prn_main": 3,
+      "prn_other": 14,
+      "cn0_dbhz": 33.0,
+      "true_code_delay_chips": 715.0,
+      "true_doppler_hz": -2250.0,
+      "coh_ms": 4,
+      "correlator_spacing_chips": 0.2,
+      "pll_bw_hz": 10.0,
+      "dll_bw_hz": 1.0,
+      "init_freq_err_hz": 15.0
+    },
+    "high_dynamic_fighter": {
+      "name": "3. 고속 기동 플랫폼 (도플러 +3750 Hz · 광대역 PLL 30 Hz)",
+      "prn_main": 9,
+      "prn_other": 22,
+      "cn0_dbhz": 44.0,
+      "true_code_delay_chips": 180.0,
+      "true_doppler_hz": 3750.0,
+      "coh_ms": 1,
+      "correlator_spacing_chips": 0.5,
+      "pll_bw_hz": 30.0,
+      "dll_bw_hz": 4.0,
+      "init_freq_err_hz": 45.0
+    },
+    "indoor_extreme_attenuation": {
+      "name": "4. 극미약 신호 (28 dB-Hz · 10ms 장기 동기적분으로 피크 복원)",
+      "prn_main": 19,
+      "prn_other": 25,
+      "cn0_dbhz": 28.0,
+      "true_code_delay_chips": 512.0,
+      "true_doppler_hz": -750.0,
+      "coh_ms": 10,
+      "correlator_spacing_chips": 0.3,
+      "pll_bw_hz": 8.0,
+      "dll_bw_hz": 0.8,
+      "init_freq_err_hz": 10.0
+    }
+  },
+  "m03_pvt_dop": {
+    "open_sky_kass": {
+      "name": "1. 개활지 표준 (Mask 10° · KASS/SBAS 정밀 보정 비교)",
+      "mask_angle_deg": 10,
+      "urban_canyon_deg": 0,
+      "zenith_iono_m": 4.5,
+      "base_uere_noise_m": 1.4,
+      "use_elevation_weighting": true
+    },
+    "urban_canyon_teheran": {
+      "name": "2. 강남 빌딩 숲 도심 협곡 (동/서 52° 차폐 → EDOP/HDOP 급등)",
+      "mask_angle_deg": 15,
+      "urban_canyon_deg": 52,
+      "zenith_iono_m": 5.5,
+      "base_uere_noise_m": 2.8,
+      "use_elevation_weighting": true
+    },
+    "solar_storm_unweighted": {
+      "name": "3. 태양 폭풍 전리층 교란 (천정 지연 11m · 가중치 미적용 OLS)",
+      "mask_angle_deg": 5,
+      "urban_canyon_deg": 0,
+      "zenith_iono_m": 11.0,
+      "base_uere_noise_m": 2.0,
+      "use_elevation_weighting": false
+    },
+    "severe_canyon_underdetermined": {
+      "name": "4. 극한 협곡 위성 부족 (Mask 48° · 빌딩 60° → 가시 위성 3기 측위 불능)",
+      "mask_angle_deg": 48,
+      "urban_canyon_deg": 60,
+      "zenith_iono_m": 5.0,
+      "base_uere_noise_m": 2.0,
+      "use_elevation_weighting": true
+    }
+  },
+  "m04_antijam_crpa": {
+    "tactical_4elem_dual_jammer": {
+      "name": "1. 전술 4소자 CRPA (위성 +15° · 재머 -40° / +50° 다중 널링)",
+      "num_elements": 4,
+      "d_lambda": 0.5,
+      "sat_angle_deg": 15,
+      "jam1_angle_deg": -40,
+      "jam1_jsr_db": 60,
+      "jam2_enabled": true,
+      "jam2_angle_deg": 50,
+      "jam2_jsr_db": 55,
+      "diagonal_loading_db": -10
+    },
+    "precision_7elem_strong_jam": {
+      "name": "2. 고성능 7소자 배열 (75 dB 강재밍 억제 & 예리한 MVDR 주빔)",
+      "num_elements": 7,
+      "d_lambda": 0.5,
+      "sat_angle_deg": 0,
+      "jam1_angle_deg": -25,
+      "jam1_jsr_db": 75,
+      "jam2_enabled": true,
+      "jam2_angle_deg": 35,
+      "jam2_jsr_db": 70,
+      "diagonal_loading_db": -10
+    },
+    "close_jammer_mainlobe_skirts": {
+      "name": "3. 위성 인접 각도 재밍 (위성 +15° · 재머 +22° 주빔 근접 입사)",
+      "num_elements": 4,
+      "d_lambda": 0.5,
+      "sat_angle_deg": 15,
+      "jam1_angle_deg": 22,
+      "jam1_jsr_db": 65,
+      "jam2_enabled": false,
+      "jam2_angle_deg": -50,
+      "jam2_jsr_db": 50,
+      "diagonal_loading_db": -5
+    },
+    "dof_overload_2elem": {
+      "name": "4. 자유도 초과 한계 (2소자 배열 N-1=1 vs 재머 2기 동시 공격)",
+      "num_elements": 2,
+      "d_lambda": 0.5,
+      "sat_angle_deg": 10,
+      "jam1_angle_deg": -35,
+      "jam1_jsr_db": 60,
+      "jam2_enabled": true,
+      "jam2_angle_deg": 45,
+      "jam2_jsr_db": 60,
+      "diagonal_loading_db": -10
+    }
+  },
+  "m05_gnss_ins_ekf": {
+    "standard_jamming_outage": {
+      "name": "1. 표준 전술 기동 (22s~38s 16초 재밍 Outage & 바이어스 학습 후 주행)",
+      "accel_bias_mps2": 0.25,
+      "gyro_bias_deg_s": 1.2,
+      "gnss_pos_sigma_m": 1.8,
+      "outage_start_sec": 22,
+      "outage_duration_sec": 16,
+      "ekf_q_scale": 1.0,
+      "ekf_r_scale": 1.0
+    },
+    "low_cost_mems_long_blackout": {
+      "name": "2. 저가형 MEMS IMU + 장시간 터널/재밍 (25초간 GNSS 완전 두절)",
+      "accel_bias_mps2": 0.45,
+      "gyro_bias_deg_s": 2.5,
+      "gnss_pos_sigma_m": 2.5,
+      "outage_start_sec": 20,
+      "outage_duration_sec": 25,
+      "ekf_q_scale": 2.0,
+      "ekf_r_scale": 1.0
+    },
+    "early_outage_uncalibrated": {
+      "name": "3. 출발 직후 조기 재밍 (3초 만에 재밍 진입 → 바이어스 미수렴 표류)",
+      "accel_bias_mps2": 0.35,
+      "gyro_bias_deg_s": 1.8,
+      "gnss_pos_sigma_m": 1.8,
+      "outage_start_sec": 3,
+      "outage_duration_sec": 22,
+      "ekf_q_scale": 1.0,
+      "ekf_r_scale": 1.0
+    },
+    "tactical_grade_imu_continuous": {
+      "name": "4. 전술급 고정밀 IMU (바이어스 0.05m/s², 0.2°/s · 20초 재밍 정밀 유지)",
+      "accel_bias_mps2": 0.05,
+      "gyro_bias_deg_s": 0.2,
+      "gnss_pos_sigma_m": 1.2,
+      "outage_start_sec": 20,
+      "outage_duration_sec": 20,
+      "ekf_q_scale": 0.5,
+      "ekf_r_scale": 1.0
+    }
+  },
+  "m06_egi_raim_spoof": {
+    "tactical_missile_raim_fde": {
+      "name": "1. 유도무기 EGI 표준 (PRN #12 45m 고장 → RAIM FDE 자동 배제 & 레버암 보정)",
+      "fault_prn_bias_m": 45.0,
+      "spoofer_delay_chips": 0.45,
+      "spoofer_power_ratio_db": 4.0,
+      "lever_arm_m": 1.2,
+      "latency_ms": 40.0,
+      "stap_taps": 5
+    },
+    "stealth_pulloff_spoofing": {
+      "name": "2. 은밀한 Pull-off 기만 공격 (0.25 chip 근접 침투 · SQM 비대칭 경보 발생)",
+      "fault_prn_bias_m": 18.0,
+      "spoofer_delay_chips": 0.25,
+      "spoofer_power_ratio_db": 3.0,
+      "lever_arm_m": 0.8,
+      "latency_ms": 20.0,
+      "stap_taps": 5
+    },
+    "high_g_uncompensated_latency": {
+      "name": "3. 고기동 선회 & 지연/레버암 미보상 경고 (레버암 2.0m · 통신지연 80ms)",
+      "fault_prn_bias_m": 0.0,
+      "spoofer_delay_chips": 0.60,
+      "spoofer_power_ratio_db": 0.0,
+      "lever_arm_m": 2.0,
+      "latency_ms": 80.0,
+      "stap_taps": 3
+    },
+    "broadband_multipath_stap": {
+      "name": "4. 광대역 다중경로 재밍 대응 STAP (4소자 × 7탭 시공간 필터링 & FDE)",
+      "fault_prn_bias_m": 65.0,
+      "spoofer_delay_chips": 0.35,
+      "spoofer_power_ratio_db": 6.0,
+      "lever_arm_m": 1.5,
+      "latency_ms": 50.0,
+      "stap_taps": 7
+    }
+  }
+}

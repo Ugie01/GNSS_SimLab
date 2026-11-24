@@ -1,0 +1,27 @@
+# Python caches & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build & installer artifacts (rebuilt via scripts/build_windows.bat)
+build/
+dist/
+dist_installer/
+*.spec
+
+# Personal study progress JSON (generated at runtime per user)
+data/user_study_plan.json
+
+# IDE & OS files
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
